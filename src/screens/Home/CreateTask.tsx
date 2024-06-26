@@ -1,12 +1,12 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-const Dashboard = () => {
+const CreateTask = () => {
   return (
     <View>
-      <Text>index</Text>
+      <Text>CreateTask</Text>
     </View>
   )
 }
 
-export default Dashboard;
+export default CreateTask
