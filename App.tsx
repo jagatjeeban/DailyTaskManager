@@ -1,12 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import MainStackNavigator from './src/navigations';
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text style={{fontSize: 20, fontWeight:'600'}}>Daily Task Manager</Text>
-      <StatusBar style="auto" />
-    </View>
+    <MainStackNavigator />
   );
 }
 
