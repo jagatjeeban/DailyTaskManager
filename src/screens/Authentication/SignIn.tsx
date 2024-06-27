@@ -1,15 +1,70 @@
 import { View, Text, SafeAreaView, StyleSheet, TextInput, TouchableOpacity } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { AuthStackParamList } from '../../navigations/AuthStack'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { showMessage } from 'react-native-flash-message'
 
 //sign in screen prop interfce
 interface SignInScreenProps {
   navigation: NativeStackNavigationProp<AuthStackParamList, 'SignIn'>
 }
 
+interface formObject {
+  'emailId': string,
+  'password': string
+}
+
 const SignIn = ({navigation}: SignInScreenProps) => {
+
+  const [ formValue, setFormValue ] = useState<formObject>({ emailId: '', password: '' });
+
+  interface formParams {
+    value: string,
+    name: string
+  }
+
+  interface UserInfo {
+    name: string,
+    emailId: string,
+    password: string,
+    confirmPass: string
+  }
+
+  //function to set the input into form state
+  const addIntoForm = ({value, name}: formParams) => {
+    if(value){
+      setFormValue(formValue => ({...formValue, [name]: value}));
+    }
+  }
+
+  //function to sign into the app
+  const signIn = async() => {
+    let user: string | null;
+    user = await AsyncStorage.getItem('USER_INFO');
+    const currentUser: UserInfo = user? JSON.parse(user): null;
+
+    if(formValue?.emailId === ''){
+      showMessage({message: 'Email Id', description: 'Email Id can not be empty!', type:'danger', icon:'danger'});
+    }
+    else if(formValue?.password === ''){
+      showMessage({message: 'Password', description: 'Password can not be empty!', type:'danger', icon:'danger'});
+    }
+    else if(!currentUser){
+      showMessage({message: 'Invalid User', description:'Looks like your account does not exist. Please register!', type:'danger', icon:'info'});
+    }
+    else if(formValue?.emailId !== currentUser?.emailId){
+      showMessage({message: 'Incorrect Email Id', description: 'Please enter the correct email id!', type:'danger', icon:'danger'});
+    }
+    else if(formValue?.password !== currentUser?.password){
+      showMessage({message: 'Incorrect Password', description: 'Please enter the correct password!', type:'danger', icon:'danger'});
+    }
+    else {
+      showMessage({message: 'Success', description:'Successfully signed in!', type:'success', icon:'success'});
+    }
+  }
+
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <KeyboardAwareScrollView style={{paddingTop:'30%', marginHorizontal: 30}} >
@@ -22,7 +77,7 @@ const SignIn = ({navigation}: SignInScreenProps) => {
             placeholder={'e.g. example@gmail.com'}
             style={styles.inputContainer}
             keyboardType={'email-address'}
-            onChangeText={(e) => null}
+            onChangeText={(e) => addIntoForm({ value: e, name: 'emailId'})}
           />
         </View>
         <View style={{marginTop: 20}}>
@@ -31,15 +86,17 @@ const SignIn = ({navigation}: SignInScreenProps) => {
             placeholder={'Enter password'}
             style={styles.inputContainer}
             secureTextEntry={true}
-            onChangeText={(e) => null}
+            onChangeText={(e) => addIntoForm({ value: e, name: 'password'})}
           />
         </View>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => null} style={styles.signInBtn}>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => signIn()} style={styles.signInBtn}>
           <Text style={styles.signInBtnText}>Sign In</Text>
         </TouchableOpacity>
         <View style={styles.bottomText}>
           <Text style={{color:'grey', fontSize: 15}}>Don't have an account?</Text>
-          <Text onPress={() => navigation.navigate('Register')} style={styles.registerText}>Register</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Register')} style={{padding: 5}}>
+            <Text style={styles.registerText}>Register</Text>
+          </TouchableOpacity>
         </View>
       </KeyboardAwareScrollView>
     </SafeAreaView>
@@ -65,8 +122,7 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   inputContainer: {
-    paddingVertical: 10, 
-    paddingHorizontal: 7, 
+    padding: 10, 
     borderWidth: 1, 
     borderColor: 'grey', 
     borderRadius: 10
@@ -94,6 +150,6 @@ const styles = StyleSheet.create({
     color:'black', 
     fontSize: 15, 
     fontWeight:'600', 
-    marginLeft: 10
+    marginLeft: 5
   },
 })

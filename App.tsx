@@ -1,10 +1,13 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import MainStackNavigator from './src/navigations';
+import FlashMessage from 'react-native-flash-message';
 
 export default function App() {
   return (
-    <MainStackNavigator />
+    <>
+      <MainStackNavigator />
+      <FlashMessage position={'bottom'} floating />
+    </>
   );
 }
 
