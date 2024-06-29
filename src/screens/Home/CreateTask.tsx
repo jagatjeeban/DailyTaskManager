@@ -46,8 +46,8 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
     return(
       <RBSheet ref={refRBSheet} height={200} customStyles={{container: styles.bottomSheetContainer, draggableIcon: styles.pillBarStyle}} closeOnPressBack draggable >
         <View>
-          <View style={{backgroundColor:'white', borderBottomWidth: 0.4, borderColor:'grey', paddingHorizontal: 20, paddingBottom: 15}} >
-            <Text style={{color:'black', fontSize: 20, fontWeight:'500'}}>Select Status</Text>
+          <View style={styles.bottomSheetHeader} >
+            <Text style={styles.bottomSheetHeaderTitle}>Select Status</Text>
           </View>
           <View style={{paddingHorizontal: 20, paddingTop:10}}>
             {statusArr.map((item, index) => {
@@ -197,5 +197,17 @@ const styles = StyleSheet.create({
     height: 3,
     borderRadius: 50,
     backgroundColor:'grey'
-  }
+  },
+  bottomSheetHeader: {
+    backgroundColor:'white', 
+    borderBottomWidth: 0.4, 
+    borderColor:'grey', 
+    paddingHorizontal: 20, 
+    paddingBottom: 15
+  },
+  bottomSheetHeaderTitle: {
+    color:'black', 
+    fontSize: 20, 
+    fontWeight:'500'
+  },
 })

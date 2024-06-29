@@ -5,6 +5,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { AuthStackParamList } from '../../navigations/AuthStack'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { showMessage } from 'react-native-flash-message'
+import { useAppDispatch } from '../../store/hooks'
+import { loginSuccess } from '../../store/authSlice'
 
 //sign in screen prop interfce
 interface SignInScreenProps {
@@ -19,6 +21,7 @@ interface formObject {
 const SignIn = ({navigation}: SignInScreenProps) => {
 
   const [ formValue, setFormValue ] = useState<formObject>({ emailId: '', password: '' });
+  const dispatch = useAppDispatch();
 
   interface formParams {
     value: string,
@@ -59,6 +62,7 @@ const SignIn = ({navigation}: SignInScreenProps) => {
       showMessage({message: 'Incorrect Password', description: 'Please enter the correct password!', type:'danger', icon:'danger'});
     }
     else {
+      dispatch(loginSuccess());
       showMessage({message: 'Success', description:'Successfully signed in!', type:'success', icon:'success'});
     }
   }

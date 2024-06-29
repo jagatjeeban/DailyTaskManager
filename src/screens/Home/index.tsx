@@ -2,10 +2,12 @@ import { View, Text, SafeAreaView, StyleSheet, FlatList, TouchableOpacity, Image
 import React, { useEffect } from 'react'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { HomeStackParamList } from '../../navigations/HomeStack'
+import { useIsFocused } from '@react-navigation/native'
+import { useAppDispatch } from '../../store/hooks'
 
 //import components
 import { NotFound } from '../../components'
-import { useIsFocused } from '@react-navigation/native'
+import { logOutEvent } from '../../store/authSlice'
 
 interface HomeScreenProps {
   navigation: NativeStackNavigationProp<HomeStackParamList, 'Home'>
@@ -14,6 +16,7 @@ interface HomeScreenProps {
 const Home = ({navigation}: HomeScreenProps) => {
 
   const isFocused = useIsFocused();
+  const dispatch = useAppDispatch();
 
   //function to get the greeting text
   const getGreeting = () => {
@@ -38,7 +41,7 @@ const Home = ({navigation}: HomeScreenProps) => {
           <Text style={{color: 'black', fontSize: 40, fontWeight: '200'}}>{`Good ${getGreeting()},`}</Text>
           <Text style={{color: 'black', fontSize: 40, fontWeight: '500'}}>Jagat Jeeban</Text>
         </View>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => null}>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => dispatch(logOutEvent())}>
           <Image source={require('../../../assets/sign_out.png')} style={{height: 30, width: 30}} />
         </TouchableOpacity>
       </View>

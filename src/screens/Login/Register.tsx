@@ -1,8 +1,8 @@
 import { View, Text, SafeAreaView, StyleSheet, TextInput, TouchableOpacity } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { AuthStackParamList } from '../../navigations/AuthStack'
-import { useRoute } from '@react-navigation/native'
+import { useIsFocused, useRoute } from '@react-navigation/native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { showMessage } from 'react-native-flash-message'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -19,8 +19,16 @@ interface RegisterScreenProps {
 
 const Register = ({navigation}: RegisterScreenProps) => {
 
-  const route = useRoute();
+  const isFocused = useIsFocused();
   const [ formValue, setFormValue ] = useState<formObject>({ name: '', emailId: '', password: '', confirmPass: '' });
+  const [ userInfo, setUserInfo ]   = useState<any>({});
+
+  interface UserInfo {
+    name: string,
+    emailId: string,
+    password: string,
+    confirmPass: string
+  }
 
   interface formParams {
     value: string,
@@ -30,6 +38,14 @@ const Register = ({navigation}: RegisterScreenProps) => {
   //function to set the input into form state
   const addIntoForm = ({value, name}: formParams) => {
     setFormValue(formValue => ({...formValue, [name]: value}));
+  }
+
+  //function to get
+  const getUserInfo = async() => {
+    let user: string | null;
+    user = await AsyncStorage.getItem('USER_INFO');
+    const userInfo: UserInfo = user? JSON.parse(user): null;
+    setUserInfo(userInfo);
   }
 
   //function to save the user info into the local storage
@@ -57,11 +73,20 @@ const Register = ({navigation}: RegisterScreenProps) => {
     else if(formValue?.confirmPass !== formValue?.password){
       showMessage({message:'Mismatched Password', description: 'Please enter matched confirm password!', type:'danger', icon:'danger'});
     }
+    else if(formValue?.emailId === userInfo?.emailId){
+      showMessage({message: 'User already exists.', description: 'Please sign in with the credentials!', type:'danger', icon:'danger'});
+    }
     else {
       saveUserInfo();
       navigation.navigate('SignIn');
     }
   }
+
+  useEffect(() => {
+    if(isFocused){
+      getUserInfo();
+    }
+  }, [isFocused]);
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
