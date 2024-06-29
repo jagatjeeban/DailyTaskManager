@@ -34,9 +34,7 @@ const SignIn = ({navigation}: SignInScreenProps) => {
 
   //function to set the input into form state
   const addIntoForm = ({value, name}: formParams) => {
-    if(value){
-      setFormValue(formValue => ({...formValue, [name]: value}));
-    }
+    setFormValue(formValue => ({...formValue, [name]: value}));
   }
 
   //function to sign into the app
@@ -75,6 +73,7 @@ const SignIn = ({navigation}: SignInScreenProps) => {
           <Text style={styles.inputTitle}>Email Id</Text>
           <TextInput
             placeholder={'e.g. example@gmail.com'}
+            value={formValue?.emailId}
             style={styles.inputContainer}
             keyboardType={'email-address'}
             onChangeText={(e) => addIntoForm({ value: e, name: 'emailId'})}
@@ -84,6 +83,7 @@ const SignIn = ({navigation}: SignInScreenProps) => {
           <Text style={styles.inputTitle}>Password</Text>
           <TextInput
             placeholder={'Enter password'}
+            value={formValue?.password}
             style={styles.inputContainer}
             secureTextEntry={true}
             onChangeText={(e) => addIntoForm({ value: e, name: 'password'})}

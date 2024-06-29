@@ -29,9 +29,7 @@ const Register = ({navigation}: RegisterScreenProps) => {
 
   //function to set the input into form state
   const addIntoForm = ({value, name}: formParams) => {
-    if(value){
-      setFormValue(formValue => ({...formValue, [name]: value}));
-    }
+    setFormValue(formValue => ({...formValue, [name]: value}));
   }
 
   //function to save the user info into the local storage
@@ -75,6 +73,7 @@ const Register = ({navigation}: RegisterScreenProps) => {
           <Text style={styles.inputTitle}>Name</Text>
           <TextInput
             placeholder={'e.g. Jagat Jeeban'}
+            value={formValue?.name}
             style={styles.inputContainer}
             keyboardType={'default'}
             onChangeText={(e) => addIntoForm({ value: e, name: 'name'})}
@@ -84,6 +83,7 @@ const Register = ({navigation}: RegisterScreenProps) => {
           <Text style={styles.inputTitle}>Email Id</Text>
           <TextInput
             placeholder={'e.g. example@gmail.com'}
+            value={formValue?.emailId}
             style={styles.inputContainer}
             keyboardType={'email-address'}
             onChangeText={(e) => addIntoForm({ value: e, name: 'emailId'})}
@@ -93,6 +93,7 @@ const Register = ({navigation}: RegisterScreenProps) => {
           <Text style={styles.inputTitle}>New Password</Text>
           <TextInput
             placeholder={'Enter password'}
+            value={formValue?.password}
             style={styles.inputContainer}
             secureTextEntry={true}
             onChangeText={(e) => addIntoForm({ value: e, name: 'password'})}
@@ -102,6 +103,7 @@ const Register = ({navigation}: RegisterScreenProps) => {
           <Text style={styles.inputTitle}>Confirm Password</Text>
           <TextInput
             placeholder={'Enter password'}
+            value={formValue?.confirmPass}
             style={styles.inputContainer}
             secureTextEntry={true}
             onChangeText={(e) => addIntoForm({ value: e, name: 'confirmPass'})}

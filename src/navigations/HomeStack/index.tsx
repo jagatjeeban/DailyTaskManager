@@ -14,7 +14,7 @@ const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 const HomeStackNavigator = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{headerShown: false, navigationBarColor: 'white'}}>
       <Stack.Screen name='Home'       component={Home} />
       <Stack.Screen name='CreateTask' component={CreateTask} />
     </Stack.Navigator>
