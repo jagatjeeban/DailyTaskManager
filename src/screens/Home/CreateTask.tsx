@@ -1,11 +1,14 @@
 import { View, Text, SafeAreaView, StyleSheet, TextInput, TouchableOpacity, Platform, FlatList } from 'react-native'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { HomeStackParamList } from '../../navigations/HomeStack'
 import DateTimePicker from 'react-native-modal-datetime-picker'
 import moment from 'moment'
 import RBSheet from 'react-native-raw-bottom-sheet'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { showMessage } from 'react-native-flash-message'
+import { RouteProp, useIsFocused, useRoute } from '@react-navigation/native'
 
 interface CreateScreenProps {
   navigation: NativeStackNavigationProp<HomeStackParamList, 'CreateTask'>
@@ -20,9 +23,12 @@ interface formObject {
 
 const CreateTask = ({navigation}: CreateScreenProps) => {
 
+  const route                                             = useRoute<RouteProp<HomeStackParamList, 'CreateTask'>>();
+  const isFocused                                         = useIsFocused();
   const statusArr                                         = ['Yet to Start', 'Pending', 'Completed'];
   const [ formValue, setFormValue ]                       = useState<formObject>({title: '', dueDate: '', description: '', status: ''});
   const [ dateTimePickerStatus, setDateTimePickerStatus ] = useState<boolean>(false);
+  const [ formActionStatus, setFormActionStatus ]         = useState<string>('add');
   const statusRef                                         = useRef<any>(null);
 
   interface formParams {
@@ -63,11 +69,76 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
     )
   }
 
+  //function to save the tasks 
+  const saveTaskInfo = async() => {
+    let tasks: string;
+    let newTaskArr = [];
+    let prevTaskArr: string | null = await AsyncStorage.getItem('TASK_LIST');
+    const taskList: Array<formObject> | null = prevTaskArr? JSON.parse(prevTaskArr): null;
+    if(taskList){
+      taskList.push(formValue);
+      tasks = JSON.stringify(taskList);
+    } else {
+      newTaskArr.push(formValue);
+      tasks = JSON.stringify(newTaskArr);
+    }
+    await AsyncStorage.setItem('TASK_LIST', tasks);
+    navigation.goBack();
+  }
+
+  //function to update any task
+  const updateTaskInfo = async() => {
+    let prevTaskArr: string | null = await AsyncStorage.getItem('TASK_LIST');
+    const taskList: Array<formObject> | null = prevTaskArr? JSON.parse(prevTaskArr): null;
+    const taskIndex: number | undefined = taskList?.findIndex(item => item?.title === route?.params?.task?.title);
+    if(taskIndex && taskIndex !== -1){
+      let updatedList = [...(taskList ?? [])];
+      updatedList[taskIndex] = formValue;
+      await AsyncStorage.setItem('TASK_LIST', JSON.stringify(updatedList));
+    }
+    navigation.goBack();
+  }
+
+  //function to validate the form
+  const validateForm = () => {
+    if(formValue?.title === ''){
+      showMessage({message: 'Title', description:'Task Title can not be empty', type:'danger', icon:'danger'});
+    }
+    else if(formValue?.dueDate === ''){
+      showMessage({message: 'Deadline', description:'Task Deadline can not be empty', type:'danger', icon:'danger'});
+    }
+    else if(formValue?.description === ''){
+      showMessage({message: 'Description', description:'Task Description can not be empty', type:'danger', icon:'danger'});
+    }
+    else if(formValue?.status === ''){
+      showMessage({message: 'Status', description:'Task Status can not be empty', type:'danger', icon:'danger'});
+    }
+    else {
+      if(formActionStatus === 'add'){
+        saveTaskInfo();
+      } else {
+        updateTaskInfo();
+      }
+    }
+  }
+
+  useEffect(() => {
+    if(isFocused){
+      if(route?.params?.task){
+        setFormActionStatus('edit');
+        addIntoForm({value: route?.params?.task?.title,       name: 'title'});
+        addIntoForm({value: route?.params?.task?.dueDate,     name: 'dueDate'});
+        addIntoForm({value: route?.params?.task?.description, name: 'description'});
+        addIntoForm({value: route?.params?.task?.status,      name: 'status'});
+      }
+    }
+  }, [isFocused]);
+
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <KeyboardAwareScrollView contentContainerStyle={{paddingHorizontal: 20, paddingTop: 70}}>
         <View style={{marginBottom: 100}}>
-          <Text style={styles.welcomeText}>Create a New Task</Text>
+          <Text style={styles.welcomeText}>{formActionStatus === 'add'? 'Create a New Task': 'Update the Task'}</Text>
         </View>
         <View style={{marginTop: 20}}>
           <Text style={styles.inputTitle}>Title</Text>
@@ -111,8 +182,8 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
         <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.goBack()} style={styles.cancelBtn}>
           <Text style={{color:'black', fontSize: 15, fontWeight: '500'}}>Cancel</Text>
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.goBack()} style={styles.createBtn}>
-          <Text style={{color:'white', fontSize: 15, fontWeight: '500'}}>Create</Text>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => validateForm()} style={styles.createBtn}>
+          <Text style={{color:'white', fontSize: 15, fontWeight: '500'}}>{formActionStatus === 'add'? 'Create':'Update'}</Text>
         </TouchableOpacity>
       </View>
       <DateTimePicker

@@ -7,7 +7,9 @@ import CreateTask from '../../screens/Home/CreateTask'
 
 export type HomeStackParamList = {
     Home: undefined,
-    CreateTask: undefined
+    CreateTask: {
+      task: any,
+    }
 }
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();

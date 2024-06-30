@@ -63,7 +63,7 @@ const SignIn = ({navigation}: SignInScreenProps) => {
     }
     else {
       dispatch(loginSuccess());
-      showMessage({message: 'Success', description:'Successfully signed in!', type:'success', icon:'success'});
+      // showMessage({message: 'Success', description:'Successfully signed in!', type:'success', icon:'success'});
     }
   }
 
