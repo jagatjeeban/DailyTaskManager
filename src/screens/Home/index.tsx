@@ -13,6 +13,9 @@ import { NotFound } from '../../components'
 //import redux actions
 import { logOutEvent } from '../../store/authSlice'
 
+//import common functions
+import { getStatusBgColor } from '../../common/commonFun'
+
 interface HomeScreenProps {
   navigation: NativeStackNavigationProp<HomeStackParamList, 'Home'>
 }
@@ -52,11 +55,16 @@ const Home = ({navigation}: HomeScreenProps) => {
     }
   }
 
-  //function to get the status background color
-  const getStatusBgColor = (status: string) => {
-    if(status === 'Yet to Start') return 'orange';
-    if(status === 'Pending')      return '#1296B0';
-    if(status === 'Completed')    return 'green';
+  //function to sign out from the app
+  const signOut = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out of the app?',
+      [
+        {text: 'Cancel', onPress: () => null},
+        {text: 'Sign Out', style: 'destructive', onPress: () => dispatch(logOutEvent())}
+      ]
+    )
   }
 
   //page header component
@@ -67,7 +75,7 @@ const Home = ({navigation}: HomeScreenProps) => {
           <Text style={{color: 'black', fontSize: 40, fontWeight: '200'}}>{`Good ${getGreeting()},`}</Text>
           <Text style={{color: 'black', fontSize: 40, fontWeight: '500'}}>{userName}</Text>
         </View>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => dispatch(logOutEvent())}>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => signOut()}>
           <Image source={require('../../../assets/sign_out.png')} style={{height: 30, width: 30}} />
         </TouchableOpacity>
       </View>
@@ -78,13 +86,13 @@ const Home = ({navigation}: HomeScreenProps) => {
   const TaskHeader = ({headerTitle, isShown}: TaskHeaderParams) => {
     return(
       <View style={styles.taskHeaderContainer}>
-          <Text style={{color: 'black', fontSize: 30, fontWeight: '400'}}>{headerTitle}</Text>
-          {isShown? 
-            <TouchableOpacity>
-              <Text style={{color:'black', fontSize: 15, fontWeight: '500'}}>View All</Text>
-            </TouchableOpacity>
-          : null}
-        </View>
+        <Text style={{color: 'black', fontSize: 30, fontWeight: '400'}}>{headerTitle}</Text>
+        {isShown? 
+          <TouchableOpacity onPress={() => navigation.navigate('AllTasks')}>
+            <Text style={{color:'black', fontSize: 15, fontWeight: '500'}}>View All</Text>
+          </TouchableOpacity>
+        : null}
+      </View>
     )
   }
 
@@ -160,7 +168,7 @@ const Home = ({navigation}: HomeScreenProps) => {
       {taskList?.length > 0? 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom: 100}}>
           <View style={{marginTop: 30}}>
-            <TaskHeader headerTitle={`Today's Tasks`} isShown={taskList.filter(item => moment(item?.dueDate).isSame(new Date(), 'date'))?.length > 3} />
+            <TaskHeader headerTitle={`Today's Tasks (${taskList.filter(item => moment(item?.dueDate).isSame(new Date(), 'date'))?.length})`} isShown={taskList.filter(item => moment(item?.dueDate).isSame(new Date(), 'date'))?.length > 3} />
             <FlatList
               data={taskList.filter(item => moment(item?.dueDate).isSame(new Date(), 'date'))}
               horizontal
@@ -175,7 +183,7 @@ const Home = ({navigation}: HomeScreenProps) => {
             />
           </View>
           <View style={{marginTop: 30}}>
-            <TaskHeader headerTitle={'Upcoming Tasks'} isShown={taskList.filter(item => moment(item?.dueDate).isAfter(new Date(), 'date'))?.length > 3} />
+            <TaskHeader headerTitle={`Upcoming Tasks (${taskList.filter(item => moment(item?.dueDate).isAfter(new Date(), 'date'))?.length})`} isShown={taskList.filter(item => moment(item?.dueDate).isAfter(new Date(), 'date'))?.length > 3} />
             <FlatList
               data={taskList.filter(item => moment(item?.dueDate).isAfter(new Date(), 'date'))}
               horizontal
@@ -190,9 +198,9 @@ const Home = ({navigation}: HomeScreenProps) => {
             />
           </View>
           <View style={{marginTop: 30}}>
-            <TaskHeader headerTitle={'All Tasks'} isShown={taskList?.length > 3} />
+            <TaskHeader headerTitle={`All Tasks (${taskList?.length})`} isShown={taskList?.length > 3} />
             <FlatList
-              data={taskList}
+              data={taskList.slice(0, 3)}
               horizontal
               showsHorizontalScrollIndicator={false}
               renderItem={TaskItem}
@@ -201,7 +209,7 @@ const Home = ({navigation}: HomeScreenProps) => {
               ListHeaderComponent={() => <View style={styles.width20} />}
               ListFooterComponent={() => 
                 taskList?.length > 3? 
-                  <TouchableOpacity onPress={() => null} style={{paddingHorizontal: 40, paddingVertical:10}} >
+                  <TouchableOpacity onPress={() => navigation.navigate('AllTasks')} style={{paddingHorizontal: 40, paddingVertical:10}} >
                     <Text style={{color:'black', fontSize: 20, fontWeight:'500'}}>View All</Text>
                   </TouchableOpacity>
                 : <View style={styles.width20} />
