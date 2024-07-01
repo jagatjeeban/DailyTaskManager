@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "DailyTaskManager",
-    "slug": "DailyTaskManager",
+    "slug": "daily-task-manager",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,10 +18,17 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.jagatjeeban.DailyTaskManager"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d556802c-755c-4d41-9443-ac9271164ab0"
+      }
+    },
+    "owner": "jagatjeeban"
   }
 }
