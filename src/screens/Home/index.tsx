@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, FlatList, TouchableOpacity, Image, ScrollView, Alert } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, FlatList, TouchableOpacity, Image, ScrollView, Alert, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { HomeStackParamList } from '../../navigations/HomeStack'
@@ -166,14 +166,14 @@ const Home = ({navigation}: HomeScreenProps) => {
     <SafeAreaView style={styles.safeAreaView}>
       <PageHeader />
       {taskList?.length > 0? 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom: 100}}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom: 130}}>
           <View style={{marginTop: 30}}>
             <TaskHeader headerTitle={`Today's Tasks (${taskList.filter(item => moment(item?.dueDate).isSame(new Date(), 'date'))?.length})`} isShown={taskList.filter(item => moment(item?.dueDate).isSame(new Date(), 'date'))?.length > 3} />
             <FlatList
               data={taskList.filter(item => moment(item?.dueDate).isSame(new Date(), 'date'))}
               horizontal
               showsHorizontalScrollIndicator={false}
-              style={{paddingVertical: 10}}
+              style={{paddingVertical: Platform.OS === 'ios'? 10: null}}
               renderItem={TaskItem}
               ListHeaderComponent={() => <View style={styles.width20} />}
               ListFooterComponent={() => <View style={styles.width20} />}
@@ -189,10 +189,10 @@ const Home = ({navigation}: HomeScreenProps) => {
               horizontal
               showsHorizontalScrollIndicator={false}
               renderItem={TaskItem}
-              style={{paddingVertical: 10}}
+              style={{paddingVertical: Platform.OS === 'ios'? 10: null}}
               ListHeaderComponent={() => <View style={styles.width20} />}
               ListFooterComponent={() => <View style={styles.width20} />}
-              ListEmptyComponent={() => <View style={{marginTop: 30}}><NotFound title={'Upcoming Task'} /></View>}
+              ListEmptyComponent={() => <View style={{marginTop: 30, width:'100%'}}><NotFound title={'Upcoming Task'} /></View>}
               ItemSeparatorComponent={() => <View style={styles.width20} />}
               keyExtractor={(_, index) => index.toString()}
             />
@@ -204,7 +204,7 @@ const Home = ({navigation}: HomeScreenProps) => {
               horizontal
               showsHorizontalScrollIndicator={false}
               renderItem={TaskItem}
-              style={{paddingVertical: 10}}
+              style={{paddingVertical: Platform.OS === 'ios'? 10: null}}
               contentContainerStyle={{alignItems:'center'}}
               ListHeaderComponent={() => <View style={styles.width20} />}
               ListFooterComponent={() => 
@@ -214,7 +214,7 @@ const Home = ({navigation}: HomeScreenProps) => {
                   </TouchableOpacity>
                 : <View style={styles.width20} />
               }
-              ListEmptyComponent={() => <View style={{marginTop: 30}}><NotFound title={'Task'} /></View>}
+              ListEmptyComponent={() => <View style={{marginTop: 30, width:'100%'}}><NotFound title={'Task'} /></View>}
               ItemSeparatorComponent={() => <View style={styles.width20} />}
               keyExtractor={(_, index) => index.toString()}
             />
@@ -247,12 +247,13 @@ const styles = StyleSheet.create({
   taskItemContainer: {
     width: 350, 
     paddingTop: 15,
+    marginVertical: 20,
     borderRadius: 12, 
     backgroundColor:'white', 
   },
   shadow: {
     elevation: 10, 
-    shadowColor:'#D4D4D4', 
+    shadowColor: Platform.OS === 'ios'? '#D4D4D4':'grey', 
     shadowRadius: 3, 
     shadowOpacity: 1, 
     shadowOffset: {width: 0, height: 1}
@@ -286,6 +287,7 @@ const styles = StyleSheet.create({
     alignItems:'center', 
     justifyContent:'space-between', 
     padding: 20,
+    paddingTop: Platform.OS === 'android'? 40: null,
     backgroundColor:'white'
   },
   taskHeaderContainer: {

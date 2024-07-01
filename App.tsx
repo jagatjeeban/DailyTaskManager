@@ -4,12 +4,14 @@ import FlashMessage from 'react-native-flash-message';
 import { Provider } from 'react-redux';
 import { persistor, store } from './src/store/store';
 import { PersistGate } from 'redux-persist/integration/react';
+import { StatusBar } from 'expo-status-bar';
 
 export default function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <MainStackNavigator />
+        <StatusBar backgroundColor='white' />
         <FlashMessage position={'bottom'} floating />
       </PersistGate>
     </Provider>

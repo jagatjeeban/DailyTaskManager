@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, TextInput, TouchableOpacity, Platform, FlatList } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, TextInput, TouchableOpacity, Platform, KeyboardAvoidingView } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -9,6 +9,9 @@ import RBSheet from 'react-native-raw-bottom-sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { showMessage } from 'react-native-flash-message'
 import { RouteProp, useIsFocused, useRoute } from '@react-navigation/native'
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants'
 
 interface CreateScreenProps {
   navigation: NativeStackNavigationProp<HomeStackParamList, 'CreateTask'>
@@ -21,6 +24,14 @@ interface formObject {
   'status': string
 }
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
 const CreateTask = ({navigation}: CreateScreenProps) => {
 
   const route                                             = useRoute<RouteProp<HomeStackParamList, 'CreateTask'>>();
@@ -30,6 +41,8 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
   const [ dateTimePickerStatus, setDateTimePickerStatus ] = useState<boolean>(false);
   const [ formActionStatus, setFormActionStatus ]         = useState<string>('add');
   const statusRef                                         = useRef<any>(null);
+  const notificationListener                              = useRef<Notifications.Subscription>();
+  const responseListener                                  = useRef<Notifications.Subscription>();
 
   interface formParams {
     value: string,
@@ -83,6 +96,7 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
       tasks = JSON.stringify(newTaskArr);
     }
     await AsyncStorage.setItem('TASK_LIST', tasks);
+    schedulePushNotification();
     navigation.goBack();
   }
 
@@ -96,6 +110,7 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
       updatedList[taskIndex] = formValue;
       await AsyncStorage.setItem('TASK_LIST', JSON.stringify(updatedList));
     }
+    schedulePushNotification();
     navigation.goBack();
   }
 
@@ -122,6 +137,67 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
     }
   }
 
+  //function to register for push notifications
+  const registerForPushNotificationsAsync = async() => {
+    let token;
+  
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+  
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        alert('Failed to get push token for push notification!');
+        return;
+      }
+      try {
+        const projectId =
+          Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+        if (!projectId) {
+          throw new Error('Project ID not found');
+        }
+        token = (
+          await Notifications.getExpoPushTokenAsync({
+            projectId,
+          })
+        ).data;
+        console.log(token);
+      } catch (e) {
+        token = `${e}`;
+      }
+    } else {
+      alert('Must use physical device for Push Notifications');
+    }
+  
+    return token;
+  }
+
+  //function to schedule for push notifications
+  const schedulePushNotification = async() => {
+    const scheduledDate: any = moment(formValue?.dueDate);
+    const currentDate: any = moment();
+    const secondsLeft: number = scheduledDate.diff(currentDate, 'seconds');
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: formValue?.title,
+        body: formValue?.description,
+        data: { data: 'goes here', test: { test1: 'more data' } },
+      },
+      trigger: { seconds: Number(secondsLeft) > 0? Number(secondsLeft): 1 },
+    });
+  }
+
   useEffect(() => {
     if(isFocused){
       if(route?.params?.task){
@@ -134,9 +210,31 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
     }
   }, [isFocused]);
 
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+
+    if (Platform.OS === 'android') {
+      Notifications.getNotificationChannelsAsync();
+    }
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      // console.log(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      // console.log(response);
+    });
+
+    return () => {
+      notificationListener.current &&
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      responseListener.current &&
+        Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeAreaView}>
-      <KeyboardAwareScrollView contentContainerStyle={{paddingHorizontal: 20, paddingTop: 70}}>
+      <KeyboardAwareScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps='handled' extraScrollHeight={150} contentContainerStyle={{paddingHorizontal: 20, paddingTop: 70, paddingBottom: 100}}>
         <View style={{marginBottom: 100}}>
           <Text style={styles.welcomeText}>{formActionStatus === 'add'? 'Create a New Task': 'Update the Task'}</Text>
         </View>
@@ -182,7 +280,7 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
         <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.goBack()} style={styles.cancelBtn}>
           <Text style={{color:'black', fontSize: 15, fontWeight: '500'}}>Cancel</Text>
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => validateForm()} style={styles.createBtn}>
+        <TouchableOpacity activeOpacity={0.7} onPress={async() => validateForm()} style={styles.createBtn}>
           <Text style={{color:'white', fontSize: 15, fontWeight: '500'}}>{formActionStatus === 'add'? 'Create':'Update'}</Text>
         </TouchableOpacity>
       </View>
@@ -247,10 +345,11 @@ const styles = StyleSheet.create({
     padding: 20, 
     flexDirection:'row', 
     alignItems:"center", 
-    justifyContent:"space-between"
+    justifyContent:"space-between",
+    backgroundColor:'white'
   },
   placeholderText: {
-    color:'#CCCCCC', 
+    color:'grey', 
     fontSize: 15, 
     fontWeight:'400'
   },

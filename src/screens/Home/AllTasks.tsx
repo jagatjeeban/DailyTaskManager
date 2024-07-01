@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity, FlatList } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity, FlatList, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { NativeStackNavigationProp } from 'react-native-screens/lib/typescript/native-stack/types'
 import { HomeStackParamList } from '../../navigations/HomeStack'
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     },
     shadow: {
         elevation: 10, 
-        shadowColor:'#D4D4D4', 
+        shadowColor: Platform.OS === 'ios'? '#D4D4D4':'grey', 
         shadowRadius: 3, 
         shadowOpacity: 1, 
         shadowOffset: {width: 0, height: 1}
