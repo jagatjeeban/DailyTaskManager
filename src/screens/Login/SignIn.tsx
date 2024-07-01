@@ -1,5 +1,5 @@
 import { View, Text, SafeAreaView, StyleSheet, TextInput, TouchableOpacity } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { AuthStackParamList } from '../../navigations/AuthStack'
@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { showMessage } from 'react-native-flash-message'
 import { useAppDispatch } from '../../store/hooks'
 import { loginSuccess } from '../../store/authSlice'
+import { useIsFocused } from '@react-navigation/native'
 
 //sign in screen prop interfce
 interface SignInScreenProps {
@@ -20,8 +21,9 @@ interface formObject {
 
 const SignIn = ({navigation}: SignInScreenProps) => {
 
+  const isFocused                   = useIsFocused();
   const [ formValue, setFormValue ] = useState<formObject>({ emailId: '', password: '' });
-  const dispatch = useAppDispatch();
+  const dispatch                    = useAppDispatch();
 
   interface formParams {
     value: string,
@@ -67,9 +69,13 @@ const SignIn = ({navigation}: SignInScreenProps) => {
     }
   }
 
+  useEffect(() => {
+    if(isFocused) setFormValue({emailId: '', password: ''});
+  }, [isFocused]);
+
   return (
     <SafeAreaView style={styles.safeAreaView}>
-      <KeyboardAwareScrollView style={{paddingTop:'30%', marginHorizontal: 30}} >
+      <KeyboardAwareScrollView showsVerticalScrollIndicator={false} style={{marginHorizontal: 20, paddingTop:100}} >
         <View style={{marginHorizontal: 20, marginBottom: 100}}>
           <Text style={styles.welcomeText}>Welcome to Daily Task Manager</Text>
         </View>

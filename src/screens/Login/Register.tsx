@@ -90,7 +90,7 @@ const Register = ({navigation}: RegisterScreenProps) => {
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
-      <KeyboardAwareScrollView style={{paddingTop:70, paddingHorizontal: 30, width:'100%'}} >
+      <KeyboardAwareScrollView showsVerticalScrollIndicator={false} style={{paddingTop:70, paddingHorizontal: 30, width:'100%'}} >
         <View style={{marginBottom: 100}}>
           <Text style={styles.welcomeText}>Register to Daily Task Manager</Text>
         </View>
