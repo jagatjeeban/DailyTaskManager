@@ -21,7 +21,7 @@ const HomeStackNavigator = () => {
     <Stack.Navigator screenOptions={{headerShown: false, navigationBarColor: 'white'}}>
       <Stack.Screen name='Home'       component={Home} />
       <Stack.Screen name='CreateTask' component={CreateTask} />
-      <Stack.Screen name='AllTasks'   component={AllTasks} options={{headerShown: true}} />
+      <Stack.Screen name='AllTasks'   component={AllTasks} options={{headerShown: true, headerTitle: 'All Tasks'}} />
     </Stack.Navigator>
   )
 }

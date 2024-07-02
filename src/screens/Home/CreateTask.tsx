@@ -13,6 +13,9 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants'
 
+//import components
+import { CelebrationAnimation } from '../../components'
+
 interface CreateScreenProps {
   navigation: NativeStackNavigationProp<HomeStackParamList, 'CreateTask'>
 }
@@ -40,6 +43,7 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
   const [ formValue, setFormValue ]                       = useState<formObject>({title: '', dueDate: '', description: '', status: ''});
   const [ dateTimePickerStatus, setDateTimePickerStatus ] = useState<boolean>(false);
   const [ formActionStatus, setFormActionStatus ]         = useState<string>('add');
+  const [ taskCompleted, setTaskCompleted ]               = useState<boolean>(false);
   const statusRef                                         = useRef<any>(null);
   const notificationListener                              = useRef<Notifications.Subscription>();
   const responseListener                                  = useRef<Notifications.Subscription>();
@@ -48,6 +52,21 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
     value: string,
     name: string
   }
+
+  //function to handle task completion animation
+  const handleTaskCompletion = () => {
+    setTaskCompleted(true);
+  };
+
+  //function to handle animation finish
+  const handleAnimationFinish = () => {
+    setTaskCompleted(false);
+    if(formActionStatus === 'add'){
+      saveTaskInfo();
+    } else {
+      updateTaskInfo();
+    }
+  };
 
   //function to set the input into state
   const addIntoForm = ({value, name}: formParams) => {
@@ -105,12 +124,14 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
     let prevTaskArr: string | null = await AsyncStorage.getItem('TASK_LIST');
     const taskList: Array<formObject> | null = prevTaskArr? JSON.parse(prevTaskArr): null;
     const taskIndex: number | undefined = taskList?.findIndex(item => item?.title === route?.params?.task?.title);
-    if(taskIndex && taskIndex !== -1){
+    if(taskIndex !== undefined && taskIndex !== -1){
       let updatedList = [...(taskList ?? [])];
       updatedList[taskIndex] = formValue;
       await AsyncStorage.setItem('TASK_LIST', JSON.stringify(updatedList));
     }
-    schedulePushNotification();
+    if(!moment(formValue?.dueDate).isBefore(new Date(), 'date')){
+      schedulePushNotification();
+    }
     navigation.goBack();
   }
 
@@ -129,10 +150,14 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
       showMessage({message: 'Status', description:'Task Status can not be empty', type:'danger', icon:'danger'});
     }
     else {
-      if(formActionStatus === 'add'){
-        saveTaskInfo();
+      if(formValue?.status === 'Completed'){
+        handleTaskCompletion();
       } else {
-        updateTaskInfo();
+        if(formActionStatus === 'add'){
+          saveTaskInfo();
+        } else {
+          updateTaskInfo();
+        }
       }
     }
   }
@@ -276,14 +301,20 @@ const CreateTask = ({navigation}: CreateScreenProps) => {
           </TouchableOpacity>
         </View>
       </KeyboardAwareScrollView>
-      <View style={styles.actionBtnContainer}>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.goBack()} style={styles.cancelBtn}>
-          <Text style={{color:'black', fontSize: 15, fontWeight: '500'}}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.7} onPress={async() => validateForm()} style={styles.createBtn}>
-          <Text style={{color:'white', fontSize: 15, fontWeight: '500'}}>{formActionStatus === 'add'? 'Create':'Update'}</Text>
-        </TouchableOpacity>
-      </View>
+      {taskCompleted? 
+        <View style={{marginBottom: 100}}>
+          <CelebrationAnimation onAnimationFinish={handleAnimationFinish} />
+        </View>
+      :
+        <View style={styles.actionBtnContainer}>
+          <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.goBack()} style={styles.cancelBtn}>
+            <Text style={{color:'black', fontSize: 15, fontWeight: '500'}}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity activeOpacity={0.7} onPress={async() => validateForm()} style={styles.createBtn}>
+            <Text style={{color:'white', fontSize: 15, fontWeight: '500'}}>{formActionStatus === 'add'? 'Create':'Update'}</Text>
+          </TouchableOpacity>
+        </View>
+      }
       <DateTimePicker
         isVisible={dateTimePickerStatus}
         mode={'date'}

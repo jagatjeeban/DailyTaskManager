@@ -102,8 +102,8 @@ const Home = ({navigation}: HomeScreenProps) => {
       <View key={index} style={[styles.taskItemContainer, styles.shadow]}>
         <View style={styles.taskItemHeader}>
           <Text numberOfLines={2} style={styles.taskTitleText}>{item?.title}</Text>
-          <View style={[styles.taskStatusContainer, {backgroundColor: moment(item?.dueDate).isBefore(new Date(), 'date')? 'red': getStatusBgColor(item?.status)}]}>
-            <Text style={{color:'white', fontSize: 15, fontWeight:'500'}}>{moment(item?.dueDate).isBefore(new Date(), 'date')? 'Expired': item?.status}</Text>
+          <View style={[styles.taskStatusContainer, {backgroundColor: getStatusBgColor(item?.status)}]}>
+            <Text style={{color:'white', fontSize: 15, fontWeight:'500'}}>{item?.status}</Text>
           </View>
         </View>
         <View style={{paddingHorizontal: 15}}>
