@@ -72,7 +72,7 @@ const Home = ({navigation}: HomeScreenProps) => {
     return(
       <View style={styles.pageHeaderContainer}>
         <View style={{maxWidth:'80%'}}>
-          <Text style={{color: 'black', fontSize: 40, fontWeight: '200'}}>{`Good ${getGreeting()},`}</Text>
+          <Text style={{color: 'black', fontSize: 25, fontWeight: '200'}}>{`Good ${getGreeting()},`}</Text>
           <Text style={{color: 'black', fontSize: 40, fontWeight: '500'}}>{userName}</Text>
         </View>
         <TouchableOpacity activeOpacity={0.7} onPress={() => signOut()}>
