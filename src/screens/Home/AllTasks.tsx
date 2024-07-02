@@ -66,8 +66,8 @@ const AllTasks = ({navigation}: AllTasksScreenProps) => {
       <View key={index} style={[styles.taskItemContainer, styles.shadow]}>
         <View style={styles.taskItemHeader}>
           <Text numberOfLines={2} style={styles.taskTitleText}>{item?.title}</Text>
-          <View style={[styles.taskStatusContainer, {backgroundColor: moment(item?.dueDate).isBefore(new Date(), 'date')? 'red': getStatusBgColor(item?.status)}]}>
-            <Text style={{color:'white', fontSize: 15, fontWeight:'500'}}>{moment(item?.dueDate).isBefore(new Date(), 'date')? 'Expired': item?.status}</Text>
+          <View style={[styles.taskStatusContainer, {backgroundColor: getStatusBgColor(item?.status)}]}>
+            <Text style={{color:'white', fontSize: 15, fontWeight:'500'}}>{item?.status}</Text>
           </View>
         </View>
         <View style={{paddingHorizontal: 15}}>
@@ -96,7 +96,10 @@ const AllTasks = ({navigation}: AllTasksScreenProps) => {
     const taskList: Array<TaskListParams> | null = tasks? JSON.parse(tasks): null;
     if(taskList){
       setTaskList(taskList);
-      setFilteredTaskList(taskList);
+      if(activeTabId === 1) setFilteredTaskList(taskList);
+      if(activeTabId === 2) setFilteredTaskList(taskList.filter(task => task?.status === 'Pending'));
+      if(activeTabId === 3) setFilteredTaskList(taskList.filter(task => task?.status === 'Yet to Start'));
+      if(activeTabId === 4) setFilteredTaskList(taskList.filter(task => task?.status === 'Completed'));
     }
   }
 
